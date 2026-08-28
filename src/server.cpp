@@ -47,9 +47,8 @@ int main() {
 
     std::cout << "Client connected! fd = " << clientFd << "\n";
 
-    char buffer[512]; 
-    ssize_t bytesRead = recv(clientFd, buffer, sizeof(buffer), 0); 
-    
+    char buffer[512];
+
     while(true){
       ssize_t bytesRead = recv(clientFd, buffer, sizeof(buffer), 0); 
         if (bytesRead > 0) {
