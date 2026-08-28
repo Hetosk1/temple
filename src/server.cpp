@@ -50,16 +50,20 @@ int main() {
     char buffer[512]; 
     ssize_t bytesRead = recv(clientFd, buffer, sizeof(buffer), 0); 
     
-    if(bytesRead > 0){
-      std::cout << "received: " << bytesRead << "bytes: ";
-      std::cout.write(buffer, bytesRead); 
-      std::cout << std::endl;
-    } else {
-      std::cout << "client disconnected or error" << std::endl;
+    while(true){
+      ssize_t bytesRead = recv(clientFd, buffer, sizeof(buffer), 0); 
+        if (bytesRead > 0) {
+          std::cout << "Received: " << bytesRead << "bytes: ";
+          std::cout.write(buffer, bytesRead);
+          std::cout << std::endl;
+        } else {
+          break;
+        }
     }
 
-    close(clientFd);
+    std::cout << "Client disconnected" << std::endl;
 
+    close(clientFd);
 
   }
 
