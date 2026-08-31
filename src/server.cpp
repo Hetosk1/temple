@@ -2,6 +2,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
+#include "Protocol.hpp"
 
 int main() {
 	int serverFd = socket(AF_INET, SOCK_STREAM, 0);
@@ -35,6 +36,8 @@ int main() {
 
   std::cout << "Listening on port 9090 \n";
 
+  KVStore kv;
+
   while(true){
     sockaddr_in clientAddr{};
     socklen_t clientLen = sizeof(clientAddr); 
@@ -48,16 +51,33 @@ int main() {
     std::cout << "Client connected! fd = " << clientFd << "\n";
 
     char buffer[512];
+    std::string lineBuf;
 
     while(true){
       ssize_t bytesRead = recv(clientFd, buffer, sizeof(buffer), 0); 
-        if (bytesRead > 0) {
-          std::cout << "Received: " << bytesRead << "bytes: ";
-          std::cout.write(buffer, bytesRead);
-          std::cout << std::endl;
-        } else {
-          break;
-        }
+      
+      if (bytesRead <= 0) {
+        break;
+      }
+
+      lineBuf.append(buffer, bytesRead);
+
+      size_t pos = lineBuf.find('\n'); 
+      if (pos == std::string::npos) {
+        continue;
+      }
+      
+      std::string line = lineBuf.substr(0, pos);
+      lineBuf.clear();
+
+      ParsedCommand cmd = parseLine(line);
+
+      if (cmd.type == CommandType::QUIT) {
+        break;
+      }
+
+      std::string response = dispatch(kv, cmd);
+      send(clientFd, response.c_str(), response.size(), 0); 
     }
 
     std::cout << "Client disconnected" << std::endl;
